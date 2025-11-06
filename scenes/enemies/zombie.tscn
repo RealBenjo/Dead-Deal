@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://3mqkiu262lmu" path="res://graphics/player/player.png" id="3_rdvt3"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_rdvt3"]
-radius = 35.057095
+radius = 35.0
 
 [node name="Zombie" instance=ExtResource("1_3pt6v")]
 slide_on_ceiling = false

@@ -26,15 +26,6 @@ func _ready() -> void:
 	vision.target_position = vision_length
 
 func _physics_process(_delta):
-	# handles enemy vision cone
-	var player_direction = (vision.get_parent().to_local(Globals.player_pos) - vision.position).angle() # direction in RAD
-	if rad_to_deg(player_direction) > fov/2: # right side of enemy
-		player_direction = deg_to_rad(fov/2)
-	elif rad_to_deg(player_direction) < -1 * fov/2: # left side of enemy
-		player_direction = deg_to_rad(-1 * fov/2)
-	
-	vision.rotation = player_direction # places raycast to correct vision cone position
-	
 	# handles enemy vision detection
 	if vision.is_colliding():
 		var collider = vision.get_collider()
@@ -46,39 +37,55 @@ func _physics_process(_delta):
 	else:
 		player_seen = false
 	
-	# handles enemy pathfinding to a position
+	# both in global space
+	var next_path_pos = nav.get_next_path_position()
+	var dir = (next_path_pos - global_position).normalized()
+	
+	# handles enemy vision length and pathfinding to a position 
 	if player_seen:
+		look_at(Globals.player_pos)
 		last_interest_pos = Globals.player_pos
 		
 		vision_length = Vector2.RIGHT * 3000
 		vision.target_position = vision_length
+		
 	elif sound_heard:
 		sound_heard = false
-		var displacex = randi_range(-500, 500)
-		var displacey = randi_range(-500, 500)
-		last_interest_pos = sound_position + Vector2(displacex, displacey)
+		
+		# makes the enemy go to roughly where the sound was heard
+		var displaceX = randi_range(-500, 500)
+		var displaceY = randi_range(-500, 500)
+		last_interest_pos = sound_position + Vector2(displaceX, displaceY)
+		
 	else:
+		# smooth rotation towards target
+		if (next_path_pos - global_position).length() > 4.0:
+			var target_angle = dir.angle()
+			rotation = lerp_angle(rotation, target_angle, 0.15)
+		
 		vision_length = Vector2(default_vision_length, 0)
 		vision.target_position = vision_length
 		velocity = Vector2.ZERO
 		# TODO: add idle animation or idle movement
 	
+	# handles enemy vision cone
+	var player_direction = (vision.get_parent().to_local(Globals.player_pos) - vision.position).angle() # direction in RAD
+	if rad_to_deg(player_direction) > fov/2: # checks if player on right side of enemy
+		player_direction = deg_to_rad(fov/2)
+	elif rad_to_deg(player_direction) < -1 * fov/2: # checks if player on left side of enemy
+		player_direction = deg_to_rad(-1 * fov/2)
+	
+	vision.rotation = player_direction # places raycast to correct vision cone position
 	
 	if nav.is_navigation_finished():
 		velocity = Vector2.ZERO
 		return
-
-	# both in global space
-	var next_path_pos = nav.get_next_path_position()
-	var dir = (next_path_pos - global_position).normalized()
-
-	# smooth rotation towards target
-	if (next_path_pos - global_position).length() > 4.0:
-		var target_angle = dir.angle()
-		rotation = lerp_angle(rotation, target_angle, 0.15)
-
-	# move enemy
-	velocity = dir * speed
+	
+	
+	# move enemy, whilst trying to avoid others
+	var desired_velocity = dir * speed
+	nav.set_velocity(desired_velocity)
+	velocity = nav.get_velocity()
 	move_and_slide()
 	
 

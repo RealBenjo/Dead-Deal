@@ -19,6 +19,8 @@ script = ExtResource("1_377w7")
 
 [node name="Enemies" type="Node2D" parent="."]
 
+[node name="PatrolPositions" type="Node2D" parent="."]
+
 [node name="Sounds" type="Node2D" parent="."]
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
