@@ -1,0 +1,31 @@
+[gd_scene load_steps=4 format=3 uid="uid://ba5sduufhjqin"]
+
+[ext_resource type="Script" uid="uid://dminjnr5k540h" path="res://scenes/levels/level.gd" id="1_377w7"]
+[ext_resource type="PackedScene" uid="uid://ysls7iwu7faj" path="res://scenes/player/player.tscn" id="2_bovvr"]
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_bovvr"]
+vertices = PackedVector2Array(938, 617, 938, -362.75, 3093.9922, 150.27344, 3200.2734, 1652.2031, 3119.8281, -1397.4219, 813.9219, -1495.9922, -1690.0703, 1749.7891, 762.0078, 617, -1713.9219, -1447.1875, 760.9922, -367.2578)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 2, 1, 5), PackedInt32Array(0, 3, 6, 7), PackedInt32Array(7, 6, 8, 9), PackedInt32Array(9, 8, 5, 1)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(3130, -1407, 814, -1506, 771, -357, 928, -353, 928, 607, 3104, 150), PackedVector2Array(814, -1506, 771, -357, 772, 607, 928, 607, 3104, 150, 3211, 1662, -1700, 1760, -1724, -1457)])
+
+[node name="Level" type="Node2D"]
+script = ExtResource("1_377w7")
+
+[node name="Ground" type="Node2D" parent="."]
+
+[node name="Items" type="Node2D" parent="."]
+
+[node name="Projectiles" type="Node2D" parent="."]
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Sounds" type="Node2D" parent="."]
+
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
+visible = false
+navigation_polygon = SubResource("NavigationPolygon_bovvr")
+
+[node name="Player" parent="." instance=ExtResource("2_bovvr")]
+
+[connection signal="bullet_signal" from="Player" to="." method="_on_player_bullet_signal"]
+[connection signal="sound_signal" from="Player" to="." method="_on_player_sound_signal"]

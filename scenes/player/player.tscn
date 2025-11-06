@@ -1,0 +1,33 @@
+[gd_scene load_steps=4 format=3 uid="uid://ysls7iwu7faj"]
+
+[ext_resource type="Script" uid="uid://cn31g24g63foj" path="res://scenes/player/player.gd" id="1_1kbk7"]
+[ext_resource type="Texture2D" uid="uid://3mqkiu262lmu" path="res://graphics/player/player.png" id="1_cyojo"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_gqjuk"]
+radius = 34.0
+
+[node name="Player" type="CharacterBody2D" groups=["Player"]]
+collision_mask = 30
+script = ExtResource("1_1kbk7")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(35, 2)
+rotation = 1.5707964
+texture = ExtResource("1_cyojo")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_gqjuk")
+
+[node name="ShootTimer" type="Timer" parent="."]
+wait_time = 0.1
+one_shot = true
+
+[node name="MuzzleEnd" type="Marker2D" parent="."]
+position = Vector2(99, 25)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(0.5, 0.5)
+position_smoothing_enabled = true
+position_smoothing_speed = 10.0
+
+[connection signal="timeout" from="ShootTimer" to="." method="_on_shoot_timer_timeout"]

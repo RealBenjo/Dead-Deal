@@ -1,0 +1,31 @@
+[gd_scene load_steps=2 format=3 uid="uid://gqvrhjx732xv"]
+
+[ext_resource type="Script" uid="uid://dcgd7aixko1d6" path="res://scenes/enemies/enemy.gd" id="1_6xk8f"]
+
+[node name="Enemy" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 15
+motion_mode = 1
+wall_min_slide_angle = 0.0
+script = ExtResource("1_6xk8f")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
+path_desired_distance = 4.0
+target_desired_distance = 4.0
+simplify_path = true
+radius = 40.0
+avoidance_layers = 2
+avoidance_mask = 2
+debug_enabled = true
+
+[node name="Timers" type="Node" parent="."]
+
+[node name="Vision" type="RayCast2D" parent="."]
+target_position = Vector2(500, 0)
+collision_mask = 5
