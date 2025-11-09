@@ -31,13 +31,13 @@ var last_interest_pos: Vector2 ##the position where the enemy wants to go to
 var sound_position: Vector2 ##this position is given by the sound scene
 
 #patrol vars
-@onready var patrol_node = get_node("../../../Patrols/Patrol1")
+@onready var parent_name = self.get_parent().name
+@onready var patrol_node = get_node("../../../Patrols/" + parent_name)
 @onready var patrol_positions = patrol_node.get_children()
 
 
 func _ready() -> void:
 	vision.target_position = vision_length
-	print(patrol_positions)
 
 func _physics_process(_delta):
 	# handles enemy vision detection
