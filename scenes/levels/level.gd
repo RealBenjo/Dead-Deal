@@ -11,22 +11,24 @@ class_name LevelParent
 
 # patrol vars
 @onready var patrols = get_node("/root/Level/Patrols").get_children() ##array of ALL patrol nodes
-@onready var zombies = get_node("/root/Level/Enemies").get_children() ##array of ALL enemy nodes
+@onready var enemies = get_node("/root/Level/Enemies").get_children() ##array of ALL enemy nodes
 
 func _ready() -> void:
-	get_patrol(0)
+	var enemy = enemies.get(0).get_child(0)
+	enemy.patrol = get_patrol(0).pick_random()
+	print(enemy.patrol)
 	
-	#for zombie in zombies:
-		#for i in zombie.get_child_count():
-			#
 
 var bullet
 var sound
 
+func get_zombie() -> void:
+	pass
+
 ##returns array of all marker positions in a patrol
-func get_patrol(i: int) -> Array:
+func get_patrol(index: int) -> Array:
 	var patrol_positions: Array
-	var patrol = patrols.get(i)
+	var patrol = patrols.get(index)
 	for j in patrol.get_child_count():
 		patrol_positions.append(patrol.get_child(j).position)
 	
