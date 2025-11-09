@@ -11,50 +11,7 @@ size = Vector2(66, 846)
 [node name="Level" instance=ExtResource("1_2s4ok")]
 script = ExtResource("2_qwwmc")
 
-[node name="Zombie" parent="Enemies" index="0" instance=ExtResource("3_f0o3i")]
-position = Vector2(622, 136)
-
-[node name="LeftPatrol" type="Node2D" parent="PatrolPositions" index="0"]
-
-[node name="Marker2D" type="Marker2D" parent="PatrolPositions/LeftPatrol" index="0"]
-position = Vector2(-1005, 1200)
-
-[node name="Marker2D2" type="Marker2D" parent="PatrolPositions/LeftPatrol" index="1"]
-position = Vector2(-662, 106)
-
-[node name="Marker2D3" type="Marker2D" parent="PatrolPositions/LeftPatrol" index="2"]
-position = Vector2(-1122, -918)
-
-[node name="Marker2D4" type="Marker2D" parent="PatrolPositions/LeftPatrol" index="3"]
-position = Vector2(253, -918)
-
-[node name="Marker2D5" type="Marker2D" parent="PatrolPositions/LeftPatrol" index="4"]
-position = Vector2(261, 289)
-
-[node name="Marker2D6" type="Marker2D" parent="PatrolPositions/LeftPatrol" index="5"]
-position = Vector2(406, 1058)
-
-[node name="RightPatrol" type="Node2D" parent="PatrolPositions" index="1"]
-
-[node name="Marker2D" type="Marker2D" parent="PatrolPositions/RightPatrol" index="0"]
-position = Vector2(1061, 1236)
-
-[node name="Marker2D2" type="Marker2D" parent="PatrolPositions/RightPatrol" index="1"]
-position = Vector2(1165, -126)
-
-[node name="Marker2D3" type="Marker2D" parent="PatrolPositions/RightPatrol" index="2"]
-position = Vector2(588, -581)
-
-[node name="Marker2D4" type="Marker2D" parent="PatrolPositions/RightPatrol" index="3"]
-position = Vector2(2218, -799)
-
-[node name="Marker2D5" type="Marker2D" parent="PatrolPositions/RightPatrol" index="4"]
-position = Vector2(2009, 191)
-
-[node name="Marker2D6" type="Marker2D" parent="PatrolPositions/RightPatrol" index="5"]
-position = Vector2(2272, 1030)
-
-[node name="BrickWallTEST" type="StaticBody2D" parent="." index="5"]
+[node name="BrickWallTEST" type="StaticBody2D" parent="." index="3"]
 position = Vector2(848, 96)
 collision_layer = 4
 collision_mask = 11
@@ -67,6 +24,62 @@ shape = SubResource("RectangleShape2D_f0o3i")
 position = Vector2(0, 30)
 scale = Vector2(1, 6.0666666)
 texture = ExtResource("3_qwwmc")
+
+[node name="Patrol1" type="Node2D" parent="Enemies" index="0"]
+
+[node name="Zombie" parent="Enemies/Patrol1" index="0" instance=ExtResource("3_f0o3i")]
+position = Vector2(622, 136)
+
+[node name="Zombie2" parent="Enemies/Patrol1" index="1" instance=ExtResource("3_f0o3i")]
+position = Vector2(-609, 107)
+
+[node name="Zombie3" parent="Enemies/Patrol1" index="2" instance=ExtResource("3_f0o3i")]
+position = Vector2(-1070, -900)
+
+[node name="Zombie4" parent="Enemies/Patrol1" index="3" instance=ExtResource("3_f0o3i")]
+position = Vector2(254, 1099)
+
+[node name="Patrol2" type="Node2D" parent="Enemies" index="1"]
+
+[node name="Patrol1" type="Node2D" parent="Patrols" index="0"]
+
+[node name="Marker2D" type="Marker2D" parent="Patrols/Patrol1" index="0"]
+position = Vector2(-1005, 1200)
+
+[node name="Marker2D2" type="Marker2D" parent="Patrols/Patrol1" index="1"]
+position = Vector2(-662, 106)
+
+[node name="Marker2D3" type="Marker2D" parent="Patrols/Patrol1" index="2"]
+position = Vector2(-1122, -918)
+
+[node name="Marker2D4" type="Marker2D" parent="Patrols/Patrol1" index="3"]
+position = Vector2(253, -918)
+
+[node name="Marker2D5" type="Marker2D" parent="Patrols/Patrol1" index="4"]
+position = Vector2(261, 289)
+
+[node name="Marker2D6" type="Marker2D" parent="Patrols/Patrol1" index="5"]
+position = Vector2(406, 1058)
+
+[node name="Patrol2" type="Node2D" parent="Patrols" index="1"]
+
+[node name="Marker2D" type="Marker2D" parent="Patrols/Patrol2" index="0"]
+position = Vector2(1061, 1236)
+
+[node name="Marker2D2" type="Marker2D" parent="Patrols/Patrol2" index="1"]
+position = Vector2(1165, -126)
+
+[node name="Marker2D3" type="Marker2D" parent="Patrols/Patrol2" index="2"]
+position = Vector2(588, -581)
+
+[node name="Marker2D4" type="Marker2D" parent="Patrols/Patrol2" index="3"]
+position = Vector2(2218, -799)
+
+[node name="Marker2D5" type="Marker2D" parent="Patrols/Patrol2" index="4"]
+position = Vector2(2009, 191)
+
+[node name="Marker2D6" type="Marker2D" parent="Patrols/Patrol2" index="5"]
+position = Vector2(2272, 1030)
 
 [node name="Player" parent="." index="8"]
 position = Vector2(584, 315)
