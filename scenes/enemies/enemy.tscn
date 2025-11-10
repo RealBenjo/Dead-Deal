@@ -22,6 +22,7 @@ simplify_path = true
 avoidance_enabled = true
 radius = 17.0
 time_horizon_agents = 0.68
+debug_enabled = true
 
 [node name="Timers" type="Node" parent="."]
 

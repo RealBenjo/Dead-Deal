@@ -17,16 +17,36 @@ class_name LevelParent
 var zombie
 
 func _ready() -> void:
-	for enemy in enemies:
-		zombie = zombie_scene.instantiate()
-		enemy.add_child(zombie)
+	for i in range(patrols.size()):
+		var patrol_whole = get_patrol(i)
+		
+		# at least 2 patrol points need to be avalaible for a zombie
+		while patrol_whole.size() >= 2:
+			var patrol_zombie: Array = []
+			
+			# gives zombie 2 patrol points
+			for j in range(2):
+				var rand = randi() % patrol_whole.size()
+				patrol_zombie.append(patrol_whole.get(rand))
+				patrol_whole.remove_at(rand)
+			
+			# TODO: make zombie actually patrol on it's own
+			spawn_zombie(i, patrol_zombie.get(0), patrol_zombie)
 	
 
 var bullet
 var sound
 
-func get_zombie() -> void:
-	pass
+##spawns a zombie in a Patrol node corresponding to the patrol of the zombie.
+##if there is an odd number of patrol points, it's all good, the enemies will simply have one more point to choose, without one additional 
+##zombie patroling the map
+func spawn_zombie(index: int, pos: Vector2, patrol: Array) -> void: #TODO: make more dynamic, spawn ANY enemy with this function
+	var enemy_par_node = enemies.get(index)
+	zombie = zombie_scene.instantiate()
+	zombie.global_position = pos
+	zombie.patrol = patrol
+	zombie.last_interest_pos = patrol.get(1) #TODO: rmv line when zombies will patrol on their own
+	enemy_par_node.add_child(zombie)
 
 ##returns array of all marker positions in a patrol
 func get_patrol(index: int) -> Array:
