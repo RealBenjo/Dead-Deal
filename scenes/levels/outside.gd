@@ -1,8 +1,8 @@
 extends LevelParent
 
 
-@onready var zombie_scene: PackedScene = preload("res://scenes/enemies/zombie.tscn")
-var zombie
+#@onready var zombie_scene: PackedScene = preload("res://scenes/enemies/zombie.tscn")
+#var zombie
 
 # DONT USE THE CODE BELOW JUST REMEMBER IT WILL OVERRIDE THE PARENT FUNC!!!
 #func _ready() -> void:

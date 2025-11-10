@@ -4,6 +4,7 @@ class_name LevelParent
 
 # scene vars
 @onready var player: CharacterBody2D = $Player
+@onready var zombie_scene: PackedScene = preload("res://scenes/enemies/zombie.tscn")
 @onready var bullet_scene: PackedScene = preload("res://scenes/player/bullet.tscn")
 @onready var sound_scene: PackedScene = preload("res://scenes/sound/sound.tscn")
 @onready var grenade_scene: PackedScene # TODO: actually implement this
@@ -13,10 +14,12 @@ class_name LevelParent
 @onready var patrols = get_node("/root/Level/Patrols").get_children() ##array of ALL patrol nodes
 @onready var enemies = get_node("/root/Level/Enemies").get_children() ##array of ALL enemy nodes
 
+var zombie
+
 func _ready() -> void:
-	var enemy = enemies.get(0).get_child(0)
-	enemy.patrol = get_patrol(0).pick_random()
-	print(enemy.patrol)
+	for enemy in enemies:
+		zombie = zombie_scene.instantiate()
+		enemy.add_child(zombie)
 	
 
 var bullet

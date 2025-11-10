@@ -1,3 +1,4 @@
-res://scenes/levels/outside.tscn
 res://scenes/levels/level.gd
-res://scenes/enemies/enemy.gd
+res://scenes/enemies/zombie.tscn
+res://scenes/levels/outside.tscn
+res://scenes/levels/outside.gd
