@@ -12,6 +12,8 @@ slide_on_ceiling = false
 script = ExtResource("2_gl10n")
 default_vision_length = 500
 health = 30
+patrol_time_min = 2.0
+patrol_time_max = 2.0
 
 [node name="Sprite2D" type="Sprite2D" parent="." index="1"]
 position = Vector2(35, 3)
@@ -25,4 +27,8 @@ shape = SubResource("CircleShape2D_rdvt3")
 wait_time = 0.3
 autostart = true
 
+[node name="PatrolTimer" type="Timer" parent="Timers" index="1"]
+one_shot = true
+
 [connection signal="timeout" from="Timers/PathFindTimer" to="." method="_on_path_find_timer_timeout"]
+[connection signal="timeout" from="Timers/PatrolTimer" to="." method="_on_patrol_timer_timeout"]

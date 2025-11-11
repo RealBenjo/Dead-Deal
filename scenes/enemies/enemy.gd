@@ -10,7 +10,7 @@ class_name EnemyWalking
 # vision vars
 @export_range(0, 360, 0.1, "degrees") var fov: float = 90.0
 @export var default_vision_length: int = 300
-var vision_length: Vector2 = Vector2(default_vision_length, 0)
+var vision_length: Vector2 = Vector2(default_vision_length, 0) ##length in pixels
 
 # basic functionality vars
 @export var speed: float = 100.0 ##player run speed is 400 for reference
@@ -31,10 +31,16 @@ var last_interest_pos: Vector2 ##the position where the enemy wants to go to
 var sound_position: Vector2 ##this position is given by the sound scene
 
 #patrol vars
+@onready var patrol_timer: Timer = $Timers/PatrolTimer
+@export var patrol_time_min: float = 10.0 ##the minimum amount of time the enemy WILL stand at a patrol point
+@export var patrol_time_max: float = 30.0 ##the maximum amount of time the enemy CAN stand at a patrol point
 var patrol: Array
+var patrol_index: int = 0 # might make patrols with more than 2 positions
 
 
 func _ready() -> void:
+	get_next_patrol_pos()
+	patrol_timer.wait_time = randf_range(patrol_time_min, patrol_time_max)
 	vision.target_position = vision_length
 
 func _physics_process(_delta):
@@ -75,14 +81,14 @@ func _physics_process(_delta):
 	velocity = nav.get_velocity()
 	move_and_slide()
 
-## what the enemy does when player is seen, when sound is heard etc.
+##what the enemy does when player is seen, when sound is heard etc.
 func switch_state(targeted_pos: Vector2, path_direction: Vector2) -> void:
 	# handles enemy vision length and pathfinding to a position 
 	if player_seen:
 		look_at(Globals.player_pos)
 		last_interest_pos = Globals.player_pos
 		
-		vision_length = Vector2.RIGHT * 3000
+		vision_length = Vector2.RIGHT * 3000 # length in pixels
 		vision.target_position = vision_length
 		
 	elif sound_heard:
@@ -99,10 +105,21 @@ func switch_state(targeted_pos: Vector2, path_direction: Vector2) -> void:
 			var target_angle = path_direction.angle()
 			rotation = lerp_angle(rotation, target_angle, 0.15)
 		
-		vision_length = Vector2(default_vision_length, 0)
+		vision_length = Vector2.RIGHT * default_vision_length
 		vision.target_position = vision_length
 		velocity = Vector2.ZERO
+		
+		if nav.is_navigation_finished() and patrol_timer.is_stopped(): #TODO: make more dynamic
+			patrol_timer.start()
 		# TODO: add idle animation or idle movement
+
+func get_next_patrol_pos() -> void:
+	if patrol_index > 1: # might make patrols with more than 2 positions so keep it this way
+		patrol_index = 0
+	
+	last_interest_pos = patrol.get(patrol_index) # get next patrol pos
+	
+	patrol_index += 1
 
 func make_path(interest_position: Vector2) -> void:
 	nav.target_position = interest_position

@@ -24,14 +24,14 @@ func _ready() -> void:
 		while patrol_whole.size() >= 2:
 			var patrol_zombie: Array = []
 			
-			# gives zombie 2 patrol points
+			# gives zombie 2 patrol points, no 2 zombies have the same patrol points
 			for j in range(2):
 				var rand = randi() % patrol_whole.size()
 				patrol_zombie.append(patrol_whole.get(rand))
 				patrol_whole.remove_at(rand)
 			
 			# TODO: make zombie actually patrol on it's own
-			spawn_zombie(i, patrol_zombie.get(0), patrol_zombie)
+			spawn_enemy(i, patrol_zombie.get(0), patrol_zombie)
 	
 
 var bullet
@@ -40,7 +40,7 @@ var sound
 ##spawns a zombie in a Patrol node corresponding to the patrol of the zombie.
 ##if there is an odd number of patrol points, it's all good, the enemies will simply have one more point to choose, without one additional 
 ##zombie patroling the map
-func spawn_zombie(index: int, pos: Vector2, patrol: Array) -> void: #TODO: make more dynamic, spawn ANY enemy with this function
+func spawn_enemy(index: int, pos: Vector2, patrol: Array) -> void: #TODO: make more dynamic, spawn ANY enemy with this function
 	var enemy_par_node = enemies.get(index)
 	zombie = zombie_scene.instantiate()
 	zombie.global_position = pos
