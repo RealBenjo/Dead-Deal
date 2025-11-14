@@ -12,16 +12,16 @@ signal sound_signal(pos: Vector2, loudness: float)
 
 # sound vars
 const BULLET_LOUDNESS: float = 2000.0
-var moving_loudness: float = 300.0
+var moving_loudness: float
 var can_emit_move_sound: bool = true
 
 # state vars
 @export var hold_threshold: float = 0.3  # seconds to count as a "hold"
 enum state {STAND, CROUCH, PRONE}
-var current_state: state = state.STAND
+var current_state: state = state.STAND #TODO: load from save file
 var state_button_held_time: float = 0.0
 var is_button_held: bool = false
-var has_triggered_hold: bool = false
+var has_triggered_hold: bool = false #TODO: figure out what this does and document
 
 var direction: Vector2
 var speed: int = 300
