@@ -16,7 +16,7 @@ var moving_loudness: float
 var can_emit_move_sound: bool = true
 
 # state vars
-@export var hold_threshold: float = 0.3  # seconds to count as a "hold"
+@export var hold_threshold: float = 0.1  # seconds to count as a "hold"
 enum state {STAND, CROUCH, PRONE}
 var current_state: state = state.STAND #TODO: load from save file
 var state_button_held_time: float = 0.0
