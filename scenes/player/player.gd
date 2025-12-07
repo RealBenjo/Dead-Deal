@@ -16,12 +16,16 @@ var moving_loudness: float
 var can_emit_move_sound: bool = true
 
 # state vars
-@export var hold_threshold: float = 0.1  # seconds to count as a "hold"
+##amount of seconds that count as a "button held". if a player holds the "state_toggle" button for less than this time, 
+##the player character will NOT go prone, only crouch (depends on the current state of the player)
+@export var hold_threshold: float = 0.1
 enum state {STAND, CROUCH, PRONE}
 var current_state: state = state.STAND #TODO: load from save file
 var state_button_held_time: float = 0.0
 var is_button_held: bool = false
-var has_triggered_hold: bool = false #TODO: figure out what this does and document
+##if user didn't trigger hold but the threshold is surpassed, handle_hold_press() runs and this turns TRUE. 
+##This prevents handle_tap() from running, after we already handled hold.
+var has_triggered_hold: bool = false
 
 var direction: Vector2
 var speed: int = 300
@@ -31,11 +35,11 @@ var can_shoot: bool = true
 var player_direction
 
 func _process(delta: float) -> void:
-	# handles player movement inputs
+	# -- HANDLES PLAYER MOVEMENT INPUTS --
 	if is_button_held:
 		state_button_held_time += delta
 		
-		if state_button_held_time >= hold_threshold and not has_triggered_hold:
+		if state_button_held_time >= hold_threshold and !has_triggered_hold:
 			handle_hold_press()
 			has_triggered_hold = true
 	
@@ -44,12 +48,12 @@ func _process(delta: float) -> void:
 	move_and_slide()
 	Globals.player_pos = global_position
 	
-	# handles movement sound
+	# -- HANDLES MOVEMENT SOUND --
 	if velocity != Vector2.ZERO and can_emit_move_sound:
 		can_emit_move_sound = false
 		
 		# calculates the current speed which is good as a loudness meter aparently (works on controller too!)
-		moving_loudness = (sqrt( pow(velocity.x, 2) + pow(velocity.y, 2)))
+		moving_loudness = sqrt( pow(velocity.x, 2) + pow(velocity.y, 2) )
 		sound_signal.emit(global_position, moving_loudness)
 		move_sound_timer.start()
 	elif velocity == Vector2.ZERO:
@@ -60,7 +64,7 @@ func _process(delta: float) -> void:
 	# rotate player
 	look_at(get_global_mouse_position())
 	
-	# ADS zoom type shit
+	# ADS zoom type shi (this is probably temporary, DONT try to make it nice just yet)
 	if Input.is_action_pressed("secondary_action"):
 		weapon_zoom = 2.5
 	else:
@@ -70,7 +74,7 @@ func _process(delta: float) -> void:
 	# get player direction for bullet placement and rotation
 	player_direction = (get_global_mouse_position() - position).normalized()
 	
-	# handles shooting
+	# -- HANDLES SHOOTING --
 	if Input.is_action_pressed("primary_action") and can_shoot and Globals.ammo > 0:
 		can_shoot = false
 		Globals.ammo -= 1
@@ -86,31 +90,22 @@ func _input(event: InputEvent) -> void:
 		is_button_held = true
 		state_button_held_time = 0.0
 		has_triggered_hold = false
-
+	
 	elif event.is_action_released("state_toggle"):
 		is_button_held = false
-
+	
 		# If we never triggered the hold, treat it as a tap
-		if not has_triggered_hold:
+		if !has_triggered_hold:
 			handle_tap()
 
 # --- STATE HANDLERS ---
-func toggle_crouch() -> void:
-	match current_state:
-		state.STAND:
-			enter_crouch()
-		state.CROUCH:
-			enter_stand()
-		state.PRONE:
-			enter_stand()
-
 func handle_tap() -> void:
 	match current_state:
 		state.STAND:
 			enter_crouch()
 		state.CROUCH:
 			enter_stand()
-		state.PRONE:
+		_: # if we ever implement more states, remember to replace this with: state.PRONE
 			enter_crouch()
 
 func handle_hold_press() -> void:
@@ -125,17 +120,17 @@ func handle_hold_press() -> void:
 func enter_stand() -> void:
 	current_state = state.STAND
 	speed = 300
-	# TODO: collider, animation, speed adjustments
+	# TODO: collider, animation...
 
 func enter_crouch() -> void:
 	current_state = state.CROUCH
 	speed = 175
-	# TODO: collider, animation, speed adjustments
+	# TODO: collider, animation...
 
 func enter_prone() -> void:
 	current_state = state.PRONE
 	speed = 100
-	# TODO: collider, animation, speed adjustments
+	# TODO: collider, animation...
 
 
 # premade signals

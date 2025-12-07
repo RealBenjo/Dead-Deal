@@ -10,128 +10,250 @@ class_name EnemyWalking
 # vision vars
 @export_range(0, 360, 0.1, "degrees") var fov: float = 90.0
 @export var default_vision_length: int = 300
-var vision_length: Vector2 = Vector2(default_vision_length, 0) ##length in pixels
+var vision_length: Vector2 = Vector2(default_vision_length, 0)
 
 # basic functionality vars
-@export var speed: float = 100.0 ##player run speed is 400 for reference
-@export var health: int = 100 ##normal walker zombie has 100 health for reference
-@export var damage: int = 10 ##player health is 100 for reference
+@export var speed: float = 100.0
+@export var health: int = 100
+@export var damage: int = 10
 
-#TODO: add awareness with the description down below (the shorter the distance, the faster the awareness buildup)
-##1000 means that if the player is standing still, it will take 1s for the zombie to spot you at the distance of 1000px 
-@export var max_awareness: float = 1000.0 
+# awareness
+@export var max_awareness: float = 300.0
 var awareness: float = 0.0
 
-#state vars
-var player_seen: bool = false ##if player is seen, this is true
-var sound_heard: bool = false ##if any sound is heard, this is true
+# state vars
+enum state {PATROLLING, INVESTIGATING, SEARCHING, ATTACKING}
+var current_state: state = state.PATROLLING
+var player_seen: bool = false
+var sound_heard: bool = false
+@onready var lose_player_timer: Timer = $Timers/LosePlayerTimer
+@onready var search_timer: Timer = $Timers/SearchTimer
 
-#pathfinding vars
-var last_interest_pos: Vector2 ##the position where the enemy wants to go to
-var sound_position: Vector2 ##this position is given by the sound scene
+# pathfinding vars
+var last_interest_pos: Vector2
+var sound_position: Vector2
 
-#patrol vars
+# patrol vars
 @onready var patrol_timer: Timer = $Timers/PatrolTimer
-@export var patrol_time_min: float = 10.0 ##the minimum amount of time the enemy WILL stand at a patrol point
-@export var patrol_time_max: float = 30.0 ##the maximum amount of time the enemy CAN stand at a patrol point
+@export var patrol_time_min: float = 10.0
+@export var patrol_time_max: float = 30.0
 var patrol: Array
-var patrol_index: int = 0 # might make patrols with more than 2 positions
+var patrol_index: int = 0
+
 
 
 func _ready() -> void:
 	get_next_patrol_pos()
 	patrol_timer.wait_time = randf_range(patrol_time_min, patrol_time_max)
 	vision.target_position = vision_length
+	
+	lose_player_timer.wait_time = 30.0
+	search_timer.wait_time = 180.0
 
-func _physics_process(_delta):
-	# handles enemy vision detection
+
+
+func _physics_process(delta):
+	handle_vision()
+	update_awareness(delta)
+
+	var next_path_pos = nav.get_next_path_position()
+	var dir = (next_path_pos - global_position).normalized()
+
+	state_machine(next_path_pos, dir)
+	update_vision_cone()
+
+	if nav.is_navigation_finished():
+		velocity = Vector2.ZERO
+		return
+
+	var desired_velocity = dir * speed
+	nav.set_velocity(desired_velocity)
+	velocity = nav.get_velocity()
+
+	# ✔ smooth rotation for ALL states
+	if dir.length() > 0.1:
+		rotation = lerp_angle(rotation, dir.angle(), 0.1)
+
+	move_and_slide()
+
+
+
+# VISION HANDLING
+func handle_vision() -> void:
 	if vision.is_colliding():
 		var collider = vision.get_collider()
 		if collider.is_in_group("Player"):
+			
+			# ❌ REMOVED THE INSTANT-SPOT LOGIC
+			# DO NOT enter attacking instantly
+			# Awareness system will handle detection gradually
+
 			player_seen = true
 			sound_heard = false
+			lose_player_timer.start()
 		else:
 			player_seen = false
 	else:
 		player_seen = false
-	
-	# both in global space
-	var next_path_pos = nav.get_next_path_position()
-	var dir = (next_path_pos - global_position).normalized()
-	
-	switch_state(next_path_pos, dir)
-	
-	# handles enemy vision cone
-	var player_direction = (vision.get_parent().to_local(Globals.player_pos) - vision.position).angle() # direction in RAD
-	if rad_to_deg(player_direction) > fov/2: # checks if player on right side of enemy
-		player_direction = deg_to_rad(fov/2)
-	elif rad_to_deg(player_direction) < -1 * fov/2: # checks if player on left side of enemy
-		player_direction = deg_to_rad(-1 * fov/2)
-	
-	vision.rotation = player_direction # places raycast to correct vision cone position
-	
-	if nav.is_navigation_finished():
-		velocity = Vector2.ZERO
-		return
-	
-	
-	# move enemy, whilst trying to avoid others
-	var desired_velocity = dir * speed
-	nav.set_velocity(desired_velocity)
-	velocity = nav.get_velocity()
-	move_and_slide()
 
-##what the enemy does when player is seen, when sound is heard etc.
-func switch_state(targeted_pos: Vector2, path_direction: Vector2) -> void:
-	# handles enemy vision length and pathfinding to a position 
+
+
+# AWARENESS LOGIC
+func update_awareness(delta: float) -> void:
 	if player_seen:
-		look_at(Globals.player_pos)
-		last_interest_pos = Globals.player_pos
+		var dist := global_position.distance_to(Globals.player_pos)
 		
-		vision_length = Vector2.RIGHT * 3000 # length in pixels
-		vision.target_position = vision_length
+		# closer → faster buildup
+		var distance_factor = clamp(1.0 - (dist / 1000.0), 0.05, 1.0)
 		
-	elif sound_heard:
-		sound_heard = false
-		
-		# makes the enemy go to roughly where the sound was heard
-		var displaceX = randi_range(-500, 500)
-		var displaceY = randi_range(-500, 500)
-		last_interest_pos = sound_position + Vector2(displaceX, displaceY)
+		awareness += distance_factor * 300.0 * delta
+		awareness = clamp(awareness, 0.0, max_awareness)
 		
 	else:
-		# smooth rotation towards target
-		if (targeted_pos - global_position).length() > 4.0:
-			var target_angle = path_direction.angle()
-			rotation = lerp_angle(rotation, target_angle, 0.15)
+		# gradual decay
+		awareness -= 200.0 * delta
+		awareness = clamp(awareness, 0.0, max_awareness)
 		
-		vision_length = Vector2.RIGHT * default_vision_length
-		vision.target_position = vision_length
-		velocity = Vector2.ZERO
-		
-		if nav.is_navigation_finished() and patrol_timer.is_stopped(): #TODO: make more dynamic
-			patrol_timer.start()
-		# TODO: add idle animation or idle movement
+	# ✔ awareness now TRIGGERS spotting correctly
+	if awareness >= max_awareness and current_state != state.ATTACKING:
+		enter_attacking()
 
+
+
+# STATE MACHINE
+func state_machine(targeted_pos: Vector2, path_direction: Vector2) -> void:
+	match current_state:
+		state.PATROLLING:
+			process_patrolling(targeted_pos, path_direction)
+		state.INVESTIGATING:
+			process_investigating()
+		state.SEARCHING:
+			process_searching()
+		state.ATTACKING:
+			process_attacking()
+
+
+
+# STATE PROCESS FUNCTIONS
+func process_patrolling(targeted_pos: Vector2, path_direction: Vector2) -> void:
+	if sound_heard:
+		enter_investigating()
+	
+	if awareness >= max_awareness:
+		enter_attacking()
+
+	vision_length = Vector2.RIGHT * default_vision_length
+	vision.target_position = vision_length
+	velocity = Vector2.ZERO
+	
+	if nav.is_navigation_finished() and patrol_timer.is_stopped():
+		patrol_timer.start()
+
+
+
+func process_investigating() -> void:
+	if awareness >= max_awareness:
+		enter_attacking()
+
+	if nav.is_navigation_finished():
+		enter_searching()
+
+	vision_length = Vector2.RIGHT * default_vision_length
+	vision.target_position = vision_length
+
+
+
+func process_searching() -> void:
+	if awareness >= max_awareness:
+		enter_attacking()
+
+	if nav.is_navigation_finished():
+		var rand_offset = Vector2(randi_range(-500, 500), randi_range(-500, 500))
+		last_interest_pos = global_position + rand_offset
+		make_path(last_interest_pos)
+
+	if search_timer.is_stopped():
+		enter_patrolling()
+
+
+
+func process_attacking() -> void:
+	if player_seen:
+		last_interest_pos = Globals.player_pos
+	else:
+		look_at(last_interest_pos)
+
+	vision_length = Vector2.RIGHT * 3000
+	make_path(last_interest_pos)
+
+	if nav.is_navigation_finished() and !player_seen:
+		if lose_player_timer.is_stopped():
+			lose_player_timer.start()
+
+
+
+# VISION CONE
+func update_vision_cone() -> void:
+	var player_direction = (vision.get_parent().to_local(Globals.player_pos) - vision.position).angle()
+	if rad_to_deg(player_direction) > fov/2:
+		player_direction = deg_to_rad(fov/2)
+	elif rad_to_deg(player_direction) < -fov/2:
+		player_direction = deg_to_rad(-fov/2)
+	
+	vision.rotation = player_direction
+
+
+
+# AUX
 func get_next_patrol_pos() -> void:
-	if patrol_index > 1: # might make patrols with more than 2 positions so keep it this way
+	if patrol_index > 1:
 		patrol_index = 0
-	
-	last_interest_pos = patrol.get(patrol_index) # get next patrol pos
-	
+	last_interest_pos = patrol.get(patrol_index)
 	patrol_index += 1
 
 func make_path(interest_position: Vector2) -> void:
 	nav.target_position = interest_position
 
+
+
+# STATE ENTER
+func enter_patrolling() -> void:
+	current_state = state.PATROLLING
+	patrol_timer.start()
+
+func enter_investigating() -> void:
+	current_state = state.INVESTIGATING
+	sound_heard = false
+	last_interest_pos = sound_position
+	make_path(last_interest_pos)
+
+func enter_attacking() -> void:
+	current_state = state.ATTACKING
+	lose_player_timer.start()
+
+func enter_searching() -> void:
+	current_state = state.SEARCHING
+	search_timer.start()
+
+
+
+# DAMAGE
 func take_damage(amount: int):
 	health -= amount
 	if health <= 0:
 		die()
 
 func die():
-	#anim.play("die")
 	queue_free()
 
 
-# premade signals
+
+# SIGNALS
+func _on_patrol_timer_timeout() -> void:
+	get_next_patrol_pos()
+
+func _on_lose_player_timer_timeout() -> void:
+	enter_searching()
+
+func _on_search_timer_timeout() -> void:
+	enter_patrolling()

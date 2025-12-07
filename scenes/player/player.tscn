@@ -9,6 +9,7 @@ radius = 34.0
 [node name="Player" type="CharacterBody2D" groups=["Player"]]
 collision_mask = 30
 script = ExtResource("1_1kbk7")
+hold_threshold = 0.13
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 position = Vector2(35, 2)
